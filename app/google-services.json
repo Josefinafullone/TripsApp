@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "779432078201",
+    "firebase_url": "https://mytripsjourney.firebaseio.com",
+    "project_id": "mytripsjourney",
+    "storage_bucket": "mytripsjourney.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779432078201:android:f0b825c7e5f38ebe545da8",
+        "android_client_info": {
+          "package_name": "com.example.mytripsjourney"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "779432078201-2p1sn1uvv99lnndrkdgug2n1bmhqj467.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mytripsjourney",
+            "certificate_hash": "dfe6a9189b5163383028d3689c78f76c3f822aeb"
+          }
+        },
+        {
+          "client_id": "779432078201-pd5qkst2aoq3f4aljjv0kb4n8qa9tukf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXJ_yUscQP4ZH9VecCobA0CB6f-1sOO9M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "779432078201-pd5qkst2aoq3f4aljjv0kb4n8qa9tukf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
