@@ -25,8 +25,8 @@
             android:layout_height="110dp"
             android:layout_marginBottom="70dp"
             android:background="@drawable/circulo_image"
-            android:padding="10dp"
-            android:src="@drawable/logo"/>
+            android:padding="16dp"
+            android:src="@drawable/logoapp"/>
 
         <Button
             android:layout_width="match_parent"

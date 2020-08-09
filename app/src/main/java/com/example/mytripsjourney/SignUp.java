@@ -19,20 +19,23 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class SignUp extends AppCompatActivity {
 
-    public static final String TAG = "TAG";
+    public static final String TAG = "SignUp";
     Button btn_ir_inicioSesion,crear_cuenta;
     EditText et_nombre, et_telefono, et_correo, et_contraseña;
-    FirebaseAuth fAuth;
-    FirebaseFirestore fStore;
-    String userID;
+    private FirebaseAuth fAuth = FirebaseAuth.getInstance();
+    private FirebaseFirestore fStore = FirebaseFirestore.getInstance();
+    private CollectionReference notebookRef = fStore.collection("Users");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +49,6 @@ public class SignUp extends AppCompatActivity {
         et_correo=(EditText)findViewById(R.id.et_correo);
         et_contraseña=(EditText)findViewById(R.id.et_contrasena);
 
-        fAuth = FirebaseAuth.getInstance();
-        fStore = FirebaseFirestore.getInstance();
-
         if(fAuth.getCurrentUser() != null){
 
         }
@@ -61,76 +61,97 @@ public class SignUp extends AppCompatActivity {
             }
         });
 
+    }
 
-        crear_cuenta.setOnClickListener(new View.OnClickListener() {
+    @Override
+    protected void onStart() {
+        super.onStart();
+        notebookRef.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
-            public void onClick(View view) {
-
-                final String email = et_correo.getText().toString().trim();
-                String contraseña = et_contraseña.getText().toString().trim();
-                final String nombre = et_nombre.getText().toString();
-                final String numero = et_telefono.getText().toString();
-
-                if(TextUtils.isEmpty(email)){
-                    et_correo.setError("Email is Required.");
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                if (e != null) {
                     return;
                 }
+                for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
+                    DocumentSnapshot documentSnapshot = dc.getDocument();
+                    String id = documentSnapshot.getId();
 
-                if(TextUtils.isEmpty(contraseña)){
-                    et_contraseña.setError("Password is Required.");
-                    return;
+                    switch (dc.getType()) {
+                        case ADDED:
+                            //   textViewData.append("\nAdded: " + id );
+                            break;
+                        case MODIFIED:
+                            //    textViewData.append("\nModified: " + id );
+                            break;
+                        case REMOVED:
+                            //   textViewData.append("\nRemoved: " + id );
+                            break;
+                    }
                 }
+            }
+        });
+    }
 
-                if(contraseña.length() < 6){
-                    et_contraseña.setError("Password Must be >= 6 Characters");
-                    return;
-                }
+    public void crearCuenta (View view){
+        final String email = et_correo.getText().toString().trim();
+        String contraseña = et_contraseña.getText().toString().trim();
+        final String name = et_nombre.getText().toString();
+        final String number = et_telefono.getText().toString();
 
-                fAuth.createUserWithEmailAndPassword(email,contraseña).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
+        if(TextUtils.isEmpty(email)){
+            et_correo.setError("Email is Required.");
+            return;
+        }
 
-                            // send verification link
+        if(TextUtils.isEmpty(contraseña)){
+            et_contraseña.setError("Password is Required.");
+            return;
+        }
 
-                            FirebaseUser fuser = fAuth.getCurrentUser();
-                            fuser.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
+        if(contraseña.length() < 6){
+            et_contraseña.setError("Password Must be >= 6 Characters");
+            return;
+        }
+
+        fAuth.createUserWithEmailAndPassword(email,contraseña).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+
+                    // send verification link
+
+                    FirebaseUser fuser = fAuth.getCurrentUser();
+                    fuser.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(SignUp.this, "Verification Email Has been Sent.", Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "onFailure: Email not sent " + e.getMessage());
+                        }
+                    });
+
+                    UserInfo user = new UserInfo(email, name, number);
+                    notebookRef.document(email).set(user)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    Toast.makeText(SignUp.this, "Verification Email Has been Sent.", Toast.LENGTH_SHORT).show();
                                 }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.d(TAG, "onFailure: Email not sent " + e.getMessage());
-                                }
-                            });
-
-                            Toast.makeText(SignUp.this, "User Created.", Toast.LENGTH_SHORT).show();
-                            userID = fAuth.getCurrentUser().getUid();
-                            DocumentReference documentReference = fStore.collection("users").document(userID);
-                            Map<String,Object> user = new HashMap<>();
-                            user.put("fName",nombre);
-                            user.put("email",email);
-                            user.put("phone",numero);
-                            documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Log.d(TAG, "onSuccess: user Profile is created for "+ userID);
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
                                     Log.d(TAG, "onFailure: " + e.toString());
                                 }
                             });
-                            startActivity(new Intent(getApplicationContext(),MainActivity.class));
 
-                        }else {
-                            Toast.makeText(SignUp.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+                    startActivity(new Intent(getApplicationContext(),MainAppActivity.class));
+
+                }else {
+                    Toast.makeText(SignUp.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

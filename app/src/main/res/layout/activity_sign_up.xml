@@ -21,9 +21,11 @@
         android:layout_height="match_parent">
 
         <ImageView
-            android:layout_width="200dp"
-            android:layout_height="100dp"
-            android:src="@drawable/logohoriszontal"
+            android:layout_width="110dp"
+            android:layout_height="110dp"
+            android:background="@drawable/circulo_image"
+            android:src="@drawable/logoapp"
+            android:padding="16dp"
             android:layout_marginBottom="50dp"
             />
         <EditText
@@ -103,6 +105,7 @@
             android:text="CREAR CUENTA"
             android:textColor="#fff"
             android:textSize="16sp"
+            android:onClick="crearCuenta"
             android:elevation="5dp"/>
         <LinearLayout
             android:layout_width="match_parent"
