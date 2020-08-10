@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -28,6 +31,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -51,6 +55,7 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import com.google.firebase.database.DatabaseReference;
 
 import org.w3c.dom.Text;
 
@@ -65,8 +70,10 @@ public class MainAppActivity extends AppCompatActivity {
     ImageView imageProfile;
     TextView tv_user;
     int TAKE_IMAGE_CODE = 10001;
-    private FirebaseFirestore fStore = FirebaseFirestore.getInstance();
-    private CollectionReference notebookRef = fStore.collection("Users");
+    private FirebaseAuth firebaseAuth;
+    private FirebaseDatabase firebaseDatabase;
+    private FirebaseStorage firebaseStorage;
+    private CollectionReference notebookRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,46 +102,60 @@ public class MainAppActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         View headView = navigationView.getHeaderView(0);
-        imageProfile = (ImageView) headView.findViewById(R.id.imageView);
-        tv_user = (TextView) headView.findViewById(R.id.textViewUserName);
+        imageProfile = headView.findViewById(R.id.imageView);
+        tv_user = headView.findViewById(R.id.textViewUserName);
 
-        Intent i = this.getIntent();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
+
+        DatabaseReference databaseReference = firebaseDatabase.getReference(firebaseAuth.getUid());
+        if(firebaseAuth.getCurrentUser().getPhotoUrl() != null) {
+            Picasso.get().load(firebaseAuth.getCurrentUser().getPhotoUrl()).resize(200, 200).into(imageProfile);
+        }
+
+        /*StorageReference storageReference = firebaseStorage.getReference();
+        storageReference.child(firebaseAuth.getUid()).child("Images/Profile Pic").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                Picasso.get().load(uri).fit().centerCrop().into(imageProfile);
+            }
+        });*/
+
+        /*Intent i = this.getIntent();
         Bundle inBundle = i.getExtras();
         if (inBundle != null) {
             String imageUrl = inBundle.get("imageUrl").toString();
             new DownloadImage((ImageView) headView.findViewById(R.id.imageView)).execute(imageUrl);
         } else {
 
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-            if (user != null) {
-
-                if (user.getPhotoUrl() != null) {
-                    Picasso.get().load(user.getPhotoUrl()).into(imageProfile);
-                }
-
-
-                final DocumentReference docRef = fStore.collection("Users").document(user.getEmail());
-                docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                tv_user.setText(document.get("userName").toString());
-                            } else {
-                                Log.d(TAG, "No such document");
-                            }
-                        } else {
-                            Log.d(TAG, "get failed with ", task.getException());
+        //String imageUrl = user.getPhotoUrl().toString();
+        //new DownloadImage((ImageView) headView.findViewById(R.id.imageView)).execute(imageUrl);
+        Picasso.get().load(user.getPhotoUrl()).resize(200,200).into(imageProfile);
+        if(user.getDisplayName() != null){
+            tv_user.setText(user.getDisplayName());
+            Toast.makeText(this, "Dentro de display name no null", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Dentro de display name null", Toast.LENGTH_SHORT).show();
+            DocumentReference docRef = fStore.collection("Users").document(user.getEmail());
+            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if(task.isSuccessful()){
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        if(documentSnapshot.exists()){
+                            Log.d(TAG," dentro de snapshot exist");
+                            tv_user.setText(documentSnapshot.get("userName").toString());
                         }
-
+                        else{
+                            Log.d(TAG," dentro de snapshot no exist");
+                        }
                     }
-                });
-            }
-        }
-
+                }
+            });
+        }*/
     }
+
 
     public void logOut(MenuItem item) {
 
@@ -146,6 +167,7 @@ public class MainAppActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         FirebaseAuth.getInstance().signOut();//logout
+                        LoginManager.getInstance().logOut();
                         startActivity(new Intent(getApplicationContext(),MainActivity.class));
                         finish();
                     }
@@ -273,6 +295,5 @@ public class MainAppActivity extends AppCompatActivity {
                     }
                 });
     }
-
 
 }

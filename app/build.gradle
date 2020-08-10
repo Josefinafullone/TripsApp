@@ -39,13 +39,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.firebase:firebase-firestore:21.4.2'
     implementation 'com.google.firebase:firebase-storage:19.1.1'
-
+    implementation 'com.google.firebase:firebase-database:18.0.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
 
     implementation 'com.android.support:multidex:1.0.3'
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
-    implementation 'com.google.firebase:firebase-core:16.0.4'
 
     implementation 'info.androidhive:fontawesome:0.0.5'
 

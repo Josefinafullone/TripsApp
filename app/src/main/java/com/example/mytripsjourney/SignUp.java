@@ -147,7 +147,8 @@ public class SignUp extends AppCompatActivity {
                                 }
                             });
 
-                    startActivity(new Intent(getApplicationContext(),MainAppActivity.class));
+                   // startActivity(new Intent(getApplicationContext(),MainAppActivity.class));
+                    startActivity(new Intent(getApplicationContext(),TestActivity.class));
 
                 }else {
                     Toast.makeText(SignUp.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
