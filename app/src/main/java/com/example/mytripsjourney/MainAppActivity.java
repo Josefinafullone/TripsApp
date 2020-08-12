@@ -31,7 +31,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -72,7 +75,9 @@ public class MainAppActivity extends AppCompatActivity {
     int TAKE_IMAGE_CODE = 10001;
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
+    private FirebaseUser user;
     private FirebaseStorage firebaseStorage;
+    private FirebaseFirestore fStore;
     private CollectionReference notebookRef;
 
     @Override
@@ -108,35 +113,15 @@ public class MainAppActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseStorage = FirebaseStorage.getInstance();
+        user = firebaseAuth.getCurrentUser();
+        fStore = FirebaseFirestore.getInstance();
 
-        DatabaseReference databaseReference = firebaseDatabase.getReference(firebaseAuth.getUid());
-        if(firebaseAuth.getCurrentUser().getPhotoUrl() != null) {
-            Picasso.get().load(firebaseAuth.getCurrentUser().getPhotoUrl()).resize(200, 200).into(imageProfile);
+        if(user.getPhotoUrl() != null) {
+            String imageUrl = user.getPhotoUrl().toString();
+            new DownloadImage(imageProfile).execute(imageUrl);
         }
 
-        /*StorageReference storageReference = firebaseStorage.getReference();
-        storageReference.child(firebaseAuth.getUid()).child("Images/Profile Pic").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                Picasso.get().load(uri).fit().centerCrop().into(imageProfile);
-            }
-        });*/
-
-        /*Intent i = this.getIntent();
-        Bundle inBundle = i.getExtras();
-        if (inBundle != null) {
-            String imageUrl = inBundle.get("imageUrl").toString();
-            new DownloadImage((ImageView) headView.findViewById(R.id.imageView)).execute(imageUrl);
-        } else {
-
-        //String imageUrl = user.getPhotoUrl().toString();
-        //new DownloadImage((ImageView) headView.findViewById(R.id.imageView)).execute(imageUrl);
-        Picasso.get().load(user.getPhotoUrl()).resize(200,200).into(imageProfile);
-        if(user.getDisplayName() != null){
-            tv_user.setText(user.getDisplayName());
-            Toast.makeText(this, "Dentro de display name no null", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Dentro de display name null", Toast.LENGTH_SHORT).show();
+        if(user.getDisplayName() == null || user.getDisplayName() == ""){
             DocumentReference docRef = fStore.collection("Users").document(user.getEmail());
             docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
@@ -144,16 +129,15 @@ public class MainAppActivity extends AppCompatActivity {
                     if(task.isSuccessful()){
                         DocumentSnapshot documentSnapshot = task.getResult();
                         if(documentSnapshot.exists()){
-                            Log.d(TAG," dentro de snapshot exist");
                             tv_user.setText(documentSnapshot.get("userName").toString());
-                        }
-                        else{
-                            Log.d(TAG," dentro de snapshot no exist");
                         }
                     }
                 }
             });
-        }*/
+        }else{
+            tv_user.setText(user.getDisplayName());
+        }
+
     }
 
 

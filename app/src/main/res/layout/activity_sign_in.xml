@@ -60,14 +60,24 @@
             android:textColorHint="#ccc"
             android:textColor="#fff"
             android:inputType="textPassword"/>
+
+        <CheckBox
+            android:text="Remember me"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:id="@+id/checkBoxUser"/>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/et_contrasena_olvidada"
-            android:textColor="#fff"
             android:gravity="end"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="25dp"
+            android:textColor="#fff"
             android:layout_marginBottom="30dp"
             android:text="¿Olvidaste tu contraseña?"/>
         <Button
